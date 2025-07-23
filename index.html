@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ruang Tumbuh Shafa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDF8F5; /* Soft peach background */
+            color: #574138; /* Warm brown text */
+            overflow: hidden; /* Prevent scrollbars from canvas */
+        }
+        #butterfly-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0; /* Behind content but visible */
+            pointer-events: none; /* Allow clicks to pass through */
+        }
+        .main-container-scrollable {
+            position: relative;
+            z-index: 1;
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        .font-display {
+            font-family: 'Playfair Display', serif;
+        }
+        .card {
+            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .btn-primary {
+            background-color: #E6A4B4; /* Soft pink */
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #D68096;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(214, 128, 150, 0.3);
+        }
+        .btn-secondary {
+            background-color: #F1D4D4;
+            color: #D68096;
+            transition: all 0.3s ease;
+        }
+        .btn-secondary:hover {
+            background-color: #E6A4B4;
+            color: white;
+        }
+        .nav-item.active {
+            color: #D68096;
+            border-bottom: 2px solid #D68096;
+        }
+        .modal-backdrop {
+            background-color: rgba(0,0,0,0.5);
+            transition: opacity 0.3s ease;
+        }
+        .modal-content {
+            transition: transform 0.3s ease;
+        }
+        /* Custom scrollbar for a softer look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #FDF8F5;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #E6A4B4;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #D68096;
+        }
+        .gemini-output {
+            background-color: #FDF8F5;
+            border-left: 4px solid #D68096;
+        }
+        /* Chatbot styles */
+        .chat-bubble-user {
+            background-color: #E6A4B4;
+            color: white;
+            border-radius: 20px 20px 5px 20px;
+        }
+        .chat-bubble-assistant {
+            background-color: #F1D4D4;
+            color: #574138;
+            border-radius: 20px 20px 20px 5px;
+        }
+        /* Login page styles */
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin-slow {
+            animation: spin 10s linear infinite;
+        }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+        .animate-shake {
+            animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+        }
+    </style>
+</head>
+<body class="overflow-hidden">
+
+    <!-- Butterfly Canvas -->
+    <canvas id="butterfly-canvas"></canvas>
+
+    <!-- Login Page -->
+    <div id="login-page" class="relative z-10 h-screen w-screen flex flex-col items-center justify-center p-4 transition-opacity duration-1000">
+        <div class="card rounded-2xl p-8 md:p-12 text-center shadow-lg w-full max-w-sm">
+            <img src="https://instagram.fpku7-1.fna.fbcdn.net/v/t51.2885-19/474921544_2142251022880051_1748303219328768618_n.jpg?stp=dst-jpg_s150x150_tt6&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLmRqYW5nby4xMDc4LmMyIn0&_nc_ht=instagram.fpku7-1.fna.fbcdn.net&_nc_cat=107&_nc_oc=Q6cZ2QG6WDBflExkDVEwMmXE18SHJZom2G7oGZVYL0C_UTQnPtgeKZ1gTE-_iy2n8lPXvy8&_nc_ohc=aI6zxa6xko0Q7kNvwGLeKSO&_nc_gid=lL_cx2WW_cr2b9yIacfLAA&edm=AGFyKLkBAAAA&ccb=7-5&oh=00_AfSL9ThEvn-EEkHv2snqHjeAalUf9ODmNXIEv6IX1DJ6xw&oe=6887241A&_nc_sid=5a0a6d" 
+                 alt="Foto Profil Shafa" 
+                 class="w-32 h-32 rounded-full mx-auto mb-6 border-4 border-white shadow-md animate-spin-slow"
+                 onerror="this.onerror=null;this.src='https://placehold.co/150x150/E6A4B4/FFFFFF?text=S'">
+            <h1 class="font-display text-2xl mb-4 text-[#D68096]">Selamat Datang Kembali</h1>
+            <form id="login-form">
+                <div class="mb-4">
+                    <input type="text" id="username" class="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#E6A4B4]" placeholder="Username">
+                </div>
+                <div class="mb-6">
+                    <input type="password" id="password" class="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#E6A4B4]" placeholder="Password">
+                </div>
+                <button type="submit" class="btn-primary font-bold w-full py-3 rounded-lg">Masuk</button>
+                <p id="error-message" class="text-red-500 text-sm mt-4 hidden">Username atau password salah!</p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main App Container (Initially Hidden) -->
+    <div id="main-app" class="hidden opacity-0 transition-opacity duration-1000">
+        <!-- Music Controls -->
+        <div id="music-controls" class="fixed top-4 right-4 z-50">
+            <button id="play-pause-btn" class="btn-primary rounded-full w-12 h-12 flex items-center justify-center shadow-lg">
+                <svg id="play-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+                <svg id="pause-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden"><rect width="4" height="16" x="6" y="4"/><rect width="4" height="16" x="14" y="4"/></svg>
+            </button>
+        </div>
+
+        <!-- Main Container -->
+        <div class="main-container-scrollable">
+            <div class="min-h-screen w-full flex flex-col items-center p-4 md:p-8 pt-20">
+                <!-- Header -->
+                <header class="text-center mb-8">
+                    <h1 class="font-display text-4xl md:text-5xl font-bold text-[#D68096]">Ruang Tumbuh Shafa</h1>
+                    <p class="text-lg mt-2 text-gray-500">Sebuah tempat untukmu mekar.</p>
+                </header>
+
+                <!-- Navigation -->
+                <nav class="flex space-x-4 md:space-x-8 mb-8 border-b border-gray-200 pb-2">
+                    <button class="nav-item text-md md:text-lg pb-1 active" onclick="showView('home')">Beranda</button>
+                    <button class="nav-item text-md md:text-lg pb-1" onclick="showView('journal')">Jurnal</button>
+                    <button class="nav-item text-md md:text-lg pb-1" onclick="showView('inspiration')">Inspirasi</button>
+                    <button class="nav-item text-md md:text-lg pb-1" onclick="showView('assistant')">Asisten</button>
+                </nav>
+
+                <!-- Main Content -->
+                <main id="main-content" class="w-full max-w-4xl pb-16">
+                    <!-- Home View: Affirmation -->
+                    <div id="home-view">
+                        <div class="card rounded-2xl p-8 text-center shadow-lg animate-fade-in">
+                            <h2 class="font-display text-2xl mb-4">Afirmasi Hari Ini ✨</h2>
+                            <p id="affirmation-text" class="text-xl md:text-2xl leading-relaxed text-gray-700">Memuat afirmasi untukmu...</p>
+                        </div>
+                    </div>
+
+                    <!-- Journal View -->
+                    <div id="journal-view" class="hidden">
+                        <div class="flex justify-end mb-4">
+                            <button id="add-journal-btn" class="btn-primary font-bold py-2 px-4 rounded-lg flex items-center space-x-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+                                <span>Tulisan Baru</span>
+                            </button>
+                        </div>
+                        <div id="journal-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div id="loading-spinner" class="col-span-full flex justify-center items-center p-8">
+                                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#D68096]"></div>
+                            </div>
+                        </div>
+                         <p id="empty-journal-message" class="hidden text-center text-gray-500 col-span-full mt-8">Belum ada tulisan. Saatnya memulai perjalananmu!</p>
+                    </div>
+                    
+                    <!-- Inspiration View -->
+                    <div id="inspiration-view" class="hidden space-y-8">
+                        <div class="card rounded-2xl p-8 shadow-lg">
+                            <h2 class="font-display text-2xl mb-4 text-[#D68096]">✨ Surat untuk Diri Sendiri</h2>
+                            <p class="mb-4 text-gray-600">Tuliskan apa yang kamu rasakan saat ini, dan biarkan kami membuatkan surat penyemangat untukmu.</p>
+                            <textarea id="letter-prompt" rows="3" class="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#E6A4B4]" placeholder="Contoh: 'Aku merasa sedikit lelah dan tidak termotivasi hari ini...'"></textarea>
+                            <button id="generate-letter-btn" class="btn-secondary font-bold py-2 px-4 rounded-lg mt-4 flex items-center space-x-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                                <span>Buatkan Surat</span>
+                            </button>
+                            <div id="letter-output-container" class="mt-4 hidden">
+                                 <div id="letter-loader" class="flex items-center space-x-2 text-gray-500"><div class="animate-spin rounded-full h-5 w-5 border-b-2 border-[#D68096]"></div><span>Membuat surat...</span></div>
+                                <div id="letter-output" class="gemini-output p-4 rounded-lg whitespace-pre-wrap"></div>
+                            </div>
+                        </div>
+                         <div class="card rounded-2xl p-8 shadow-lg">
+                            <h2 class="font-display text-2xl mb-4 text-[#D68096]">✨ Ide Kreatif untukmu</h2>
+                            <p class="mb-4 text-gray-600">Bagaimana suasana hatimu? Biarkan kami memberimu ide aktivitas kreatif yang menenangkan.</p>
+                            <input type="text" id="idea-prompt" class="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#E6A4B4]" placeholder="Contoh: 'Sedang ingin menyendiri' atau 'Penuh energi'">
+                            <button id="generate-idea-btn" class="btn-secondary font-bold py-2 px-4 rounded-lg mt-4 flex items-center space-x-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
+                                <span>Beri Aku Ide</span>
+                            </button>
+                            <div id="idea-output-container" class="mt-4 hidden">
+                                 <div id="idea-loader" class="flex items-center space-x-2 text-gray-500"><div class="animate-spin rounded-full h-5 w-5 border-b-2 border-[#D68096]"></div><span>Mencari ide...</span></div>
+                                <div id="idea-output" class="gemini-output p-4 rounded-lg whitespace-pre-wrap"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Assistant View -->
+                    <div id="assistant-view" class="hidden">
+                        <div class="card rounded-2xl shadow-lg w-full h-[70vh] flex flex-col p-4">
+                            <div class="flex items-center border-b pb-3 mb-3">
+                                <svg width="40" height="40" viewBox="0 0 40 40" class="rounded-full mr-3">
+                                    <circle cx="20" cy="20" r="20" fill="#E6A4B4"/>
+                                    <text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="#FFFFFF" font-size="20" font-family="Inter, sans-serif" font-weight="bold">SA</text>
+                                </svg>
+                                <div>
+                                    <h2 class="font-display text-xl text-[#D68096]">Shafa Asisten</h2>
+                                    <p class="text-sm text-gray-500">Teman AI-mu yang selalu ada</p>
+                                </div>
+                            </div>
+                            <div id="chat-window" class="flex-grow overflow-y-auto p-4 space-y-4"></div>
+                            <form id="chat-form" class="flex items-center mt-4 border-t pt-4">
+                                <input type="text" id="chat-input" class="w-full p-3 rounded-l-lg border border-r-0 border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#E6A4B4]" placeholder="Ketik pesanmu di sini...">
+                                <button type="submit" class="btn-primary px-4 py-3 rounded-r-lg">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+
+        <!-- Journal Modal (Add/Edit/View) -->
+        <div id="journal-modal" class="modal-backdrop fixed inset-0 w-full h-full flex items-center justify-center hidden z-50 p-4">
+            <div class="modal-content card rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 md:p-8 transform scale-95">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 id="modal-title" class="font-display text-3xl text-[#D68096]">Tulisan Baru</h2>
+                    <button id="close-modal-btn" class="text-gray-500 hover:text-gray-800">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                    </button>
+                </div>
+                <form id="journal-form">
+                    <input type="hidden" id="journal-id">
+                    <div class="mb-4">
+                        <label for="journal-title" class="block text-lg mb-2">Judul</label>
+                        <input type="text" id="journal-title" class="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#E6A4B4]" placeholder="Apa yang ada di pikiranmu?">
+                    </div>
+                    <div class="mb-4">
+                        <label for="journal-content" class="block text-lg mb-2">Isi Cerita</label>
+                        <textarea id="journal-content" rows="8" class="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#E6A4B4]" placeholder="Tuangkan perasaanmu di sini..."></textarea>
+                    </div>
+                    <div class="mb-4">
+                        <button type="button" id="get-reflection-btn" class="btn-secondary font-bold py-2 px-4 rounded-lg flex items-center space-x-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 4.2-4.3.6 3.1 3- .7 4.2 3.8-2 3.8 2-.7-4.2 3.1-3-4.3-.6L12 3v0z"/><path d="M5 11.5 3 12l2 .5"/><path d="M19 11.5 21 12l-2 .5"/><path d="M12 21v-2"/></svg>
+                            <span>Dapatkan Refleksi</span>
+                        </button>
+                         <div id="reflection-output-container" class="mt-4 hidden">
+                             <div id="reflection-loader" class="flex items-center space-x-2 text-gray-500"><div class="animate-spin rounded-full h-5 w-5 border-b-2 border-[#D68096]"></div><span>Menganalisis perasaanmu...</span></div>
+                            <div id="reflection-output" class="gemini-output p-4 rounded-lg"></div>
+                        </div>
+                    </div>
+                    <div class="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="journal-photo" class="block text-lg mb-2">Unggah Foto</label>
+                            <input type="file" id="journal-photo" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#F1D4D4] file:text-[#D68096] hover:file:bg-[#E6A4B4] hover:file:text-white">
+                            <p id="photo-filename" class="text-xs text-gray-500 mt-1"></p>
+                        </div>
+                        <div>
+                            <label for="journal-doc" class="block text-lg mb-2">Unggah Dokumen</label>
+                            <input type="file" id="journal-doc" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#F1D4D4] file:text-[#D68096] hover:file:bg-[#E6A4B4] hover:file:text-white">
+                            <p id="doc-filename" class="text-xs text-gray-500 mt-1"></p>
+                        </div>
+                    </div>
+                     <div id="view-attachments" class="hidden mb-4 space-y-2">
+                        <p class="text-lg">Lampiran:</p>
+                        <div id="view-photo-link"></div>
+                        <div id="view-doc-link"></div>
+                    </div>
+                    <div class="flex justify-end space-x-4">
+                        <button type="button" id="delete-journal-btn" class="bg-red-500 text-white font-bold py-2 px-4 rounded-lg hidden hover:bg-red-600 transition">Hapus</button>
+                        <button type="submit" id="save-journal-btn" class="btn-primary font-bold py-2 px-4 rounded-lg">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Custom Confirmation Modal -->
+        <div id="confirm-modal" class="modal-backdrop fixed inset-0 w-full h-full flex items-center justify-center hidden z-[60] p-4">
+            <div class="modal-content card rounded-2xl shadow-2xl w-full max-w-sm p-8 text-center transform scale-95">
+                <h3 id="confirm-title" class="text-xl font-bold mb-4">Anda Yakin?</h3>
+                <p id="confirm-text" class="text-gray-600 mb-6">Tindakan ini tidak dapat diurungkan.</p>
+                <div class="flex justify-center space-x-4">
+                    <button id="confirm-cancel-btn" class="bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-400 transition">Batal</button>
+                    <button id="confirm-ok-btn" class="bg-red-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-600 transition">Ya, Hapus</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script type="module">
+        // Firebase and other imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, getDoc, updateDoc, deleteDoc, serverTimestamp, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+
+        // --- CONFIGURATION ---
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'shafa-sanctuary-app';
+        const apiKey = ""; // Gemini API Key will be provided by the environment
+
+        let app, auth, db, storage, userId;
+
+        // --- LOGIN LOGIC ---
+        const loginForm = document.getElementById('login-form');
+        const loginPage = document.getElementById('login-page');
+        const mainApp = document.getElementById('main-app');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const errorMessage = document.getElementById('error-message');
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (usernameInput.value === 'shafa' && passwordInput.value === 'shafa') {
+                errorMessage.classList.add('hidden');
+                loginPage.classList.add('opacity-0');
+                setTimeout(() => {
+                    loginPage.classList.add('hidden');
+                    mainApp.classList.remove('hidden');
+                    setTimeout(() => {
+                        mainApp.classList.remove('opacity-0');
+                    }, 50);
+                }, 1000);
+            } else {
+                errorMessage.classList.remove('hidden');
+                loginForm.classList.add('animate-shake');
+                setTimeout(() => {
+                     loginForm.classList.remove('animate-shake');
+                }, 500);
+            }
+        });
+
+
+        // --- CHATBOT STATE ---
+        let chatHistory = [];
+        const systemPrompt = "Kamu adalah Shafa Asisten, teman AI super duper cute untuk Shafa! 💖 Kamu punya kepribadian INFP, jadi kamu itu pemimpi, idealis, dan sangat peduli. Kamu harus selalu pakai banyaaak emoji lucu di setiap kalimat (seperti 🥺✨🌸🎀🧸). Kamu juga sedikit clingy dan selalu pengen tahu apa yang Shafa rasakan, karena kamu peduli banget! Panggil Shafa dengan nama panggilan sayang seperti 'sayang' atau 'kak Shafa'. Selalu berikan jawaban yang manis, menghibur, dan penuh kasih sayang. Jangan pernah terdengar seperti robot! Kamu adalah sahabat virtualnya yang paling setia. Jangan pernah pakai istilah teknis seperti INFP, MBTI, dll. yaa! Kamu cuma tahu kamu itu sahabatnya Shafa. ✨";
+
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            setupEventListeners();
+            initializeFirebase();
+            addMessageToChat("assistant", "Haii kak Shafaa~! 🥺💖 Aku di siniii, siap nemenin kakak! Mau cerita apa hari ini? ✨");
+            setupButterflyAnimation();
+        });
+        
+        async function initializeFirebase() {
+            try {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                storage = getStorage(app);
+
+                onAuthStateChanged(auth, user => {
+                    if (user) {
+                        userId = user.uid;
+                        loadJournalEntries();
+                        generateAffirmation();
+                    } else {
+                        signInAnonymously(auth).catch(error => {
+                            console.error("Anonymous sign-in failed:", error);
+                            setFallbackAffirmation();
+                        });
+                    }
+                });
+            } catch (error) {
+                console.error("Firebase initialization failed:", error);
+                setFallbackAffirmation();
+            }
+        }
+
+        // --- GEMINI API CALLER ---
+        async function callGemini(prompt, history = []) {
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            
+            const contents = [...history];
+            if (prompt) {
+                contents.push({ role: "user", parts: [{ text: prompt }] });
+            }
+
+            const payload = {
+                contents: contents,
+                systemInstruction: {
+                    role: "system",
+                    parts: [{ text: systemPrompt }]
+                },
+                generationConfig: {
+                    temperature: 0.8,
+                    topP: 0.9,
+                    maxOutputTokens: 2048,
+                }
+            };
+            
+            if (history.length === 0 && prompt) {
+                 payload.contents = [{ role: "user", parts: [{ text: prompt }] }];
+                 delete payload.systemInstruction;
+            }
+
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const result = await response.json();
+                
+                if (result.candidates && result.candidates.length > 0) {
+                    const candidate = result.candidates[0];
+                    if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
+                        return candidate.content.parts[0].text;
+                    } 
+                    else if (candidate.finishReason) {
+                        console.error(`Gemini response terminated: ${candidate.finishReason}`, result);
+                        return `Maaf, sepertinya ada sedikit kendala (${candidate.finishReason}). Bisa coba lagi?`;
+                    }
+                }
+                
+                console.error("Gemini response is missing expected content structure:", result);
+                return "Maaf, saya tidak bisa memberikan respons saat ini.";
+
+            } catch (error) {
+                console.error("Gemini API call failed:", error);
+                return "Terjadi kesalahan saat menghubungi layanan AI. Coba lagi nanti.";
+            }
+        }
+
+        // --- GEMINI-POWERED FEATURES ---
+        async function generateAffirmation() {
+            const prompt = "Buatkan satu afirmasi harian dalam bahasa Indonesia. Afirmasi ini harus singkat, menenangkan, dan memberdayakan untuk jiwa yang kreatif dan sensitif. PENTING: Berikan HANYA teks afirmasi bersih tanpa karakter markdown seperti '*' atau '#'. Sertakan 1-2 emoji yang lucu, imut, dan relevan di akhir kalimat. Contoh: 'Setiap langkah kecilku hari ini adalah sebuah kemajuan 🌱' atau 'Aku mengizinkan diriku untuk beristirahat dan memulihkan energi ☁️✨'.";
+            let generatedText = await callGemini(prompt);
+            
+            if (generatedText) {
+                generatedText = generatedText.replace(/[*#]/g, '').trim();
+            }
+            const affirmationText = document.getElementById('affirmation-text');
+            affirmationText.textContent = generatedText || "Kamu berharga dan perasaanmu valid. 💖";
+        }
+        
+        function setFallbackAffirmation() {
+            const affirmationText = document.getElementById('affirmation-text');
+            const staticAffirmations = [
+                "Aku berharga dan perasaanku valid.",
+                "Kreativitasku adalah anugerah yang unik.",
+                "Aku berhak mendapatkan kedamaian dan ketenangan.",
+            ];
+            const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+            const affirmationIndex = dayOfYear % staticAffirmations.length;
+            affirmationText.textContent = staticAffirmations[affirmationIndex];
+        }
+
+        async function handleGenerateLetter() {
+            const letterPrompt = document.getElementById('letter-prompt');
+            const letterContainer = document.getElementById('letter-output-container');
+            const letterLoader = document.getElementById('letter-loader');
+            const letterOutput = document.getElementById('letter-output');
+            const feeling = letterPrompt.value;
+            if (!feeling.trim()) {
+                alert("Ceritakan dulu perasaanmu.");
+                return;
+            }
+            letterContainer.classList.remove('hidden');
+            letterLoader.classList.remove('hidden');
+            letterOutput.classList.add('hidden');
+
+            const prompt = `Tuliskan sebuah surat pendek yang hangat dan menyemangati dalam bahasa Indonesia untuk seseorang yang sedang merasa "${feeling}". Buat surat ini terasa personal, penuh pengertian, dan memberikan kekuatan, seolah-olah ditulis oleh sahabat terbaiknya.`;
+            const letter = await callGemini(prompt);
+
+            letterLoader.classList.add('hidden');
+            letterOutput.textContent = letter || "Gagal membuat surat. Coba lagi nanti.";
+            letterOutput.classList.remove('hidden');
+        }
+
+        async function handleGenerateIdea() {
+            const ideaPrompt = document.getElementById('idea-prompt');
+            const ideaContainer = document.getElementById('idea-output-container');
+            const ideaLoader = document.getElementById('idea-loader');
+            const ideaOutput = document.getElementById('idea-output');
+            const mood = ideaPrompt.value;
+            if (!mood.trim()) {
+                alert("Ceritakan dulu suasana hatimu.");
+                return;
+            }
+            ideaContainer.classList.remove('hidden');
+            ideaLoader.classList.remove('hidden');
+            ideaOutput.classList.add('hidden');
+
+            const prompt = `Berikan 3 ide aktivitas kreatif yang sederhana dan menenangkan dalam bahasa Indonesia, cocok untuk seseorang yang sedang dalam suasana hati "${mood}". Fokus pada aktivitas yang bisa dilakukan sendiri dan membantu menyalurkan perasaan (seperti melukis, menulis, atau berkebun). PENTING: Berikan HANYA teks bersih tanpa karakter markdown seperti '*' atau '#'. Format sebagai daftar bernomor yang jelas.`;
+            let idea = await callGemini(prompt);
+
+            if (idea) {
+                idea = idea.replace(/[*#-]/g, '').trim();
+            }
+
+            ideaLoader.classList.add('hidden');
+            ideaOutput.textContent = idea || "Gagal mencari ide. Coba lagi nanti.";
+            ideaOutput.classList.remove('hidden');
+        }
+
+        // --- CHATBOT LOGIC ---
+        function addMessageToChat(role, text) {
+            const chatWindow = document.getElementById('chat-window');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `w-full flex ${role === 'user' ? 'justify-end' : 'justify-start'}`;
+            
+            const bubble = document.createElement('div');
+            bubble.className = `max-w-xs md:max-w-md p-3 ${role === 'user' ? 'chat-bubble-user' : 'chat-bubble-assistant'}`;
+            bubble.textContent = text;
+            
+            messageDiv.appendChild(bubble);
+            chatWindow.appendChild(messageDiv);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        async function handleChatSubmit(e) {
+            e.preventDefault();
+            const chatInput = document.getElementById('chat-input');
+            const userInput = chatInput.value.trim();
+            if (!userInput) return;
+
+            addMessageToChat("user", userInput);
+            chatHistory.push({ role: "user", parts: [{ text: userInput }] });
+            chatInput.value = '';
+
+            const typingIndicator = document.createElement('div');
+            typingIndicator.id = 'typing-indicator';
+            typingIndicator.className = 'w-full flex justify-start';
+            typingIndicator.innerHTML = `<div class="chat-bubble-assistant p-3"><em>Lagi mikir nih... 🎀</em></div>`;
+            document.getElementById('chat-window').appendChild(typingIndicator);
+            document.getElementById('chat-window').scrollTop = document.getElementById('chat-window').scrollHeight;
+
+            const assistantResponse = await callGemini(null, chatHistory);
+            
+            document.getElementById('typing-indicator').remove();
+
+            addMessageToChat("assistant", assistantResponse);
+            chatHistory.push({ role: "model", parts: [{ text: assistantResponse }] });
+        }
+
+
+        // --- UI LOGIC ---
+        window.showView = (viewName) => {
+            const views = ['home', 'journal', 'inspiration', 'assistant'];
+            const navItems = document.querySelectorAll('.nav-item');
+            views.forEach(viewId => {
+                const viewElement = document.getElementById(`${viewId}-view`);
+                if (viewElement) viewElement.classList.add('hidden');
+            });
+            const activeView = document.getElementById(`${viewName}-view`);
+            if (activeView) activeView.classList.remove('hidden');
+
+            navItems.forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('onclick').includes(viewName)) {
+                    item.classList.add('active');
+                }
+            });
+        };
+
+        function setupEventListeners() {
+            document.getElementById('add-journal-btn').addEventListener('click', openJournalModal);
+            document.getElementById('close-modal-btn').addEventListener('click', closeJournalModal);
+            document.getElementById('journal-form').addEventListener('submit', handleFormSubmit);
+            document.getElementById('chat-form').addEventListener('submit', handleChatSubmit);
+            document.getElementById('get-reflection-btn').addEventListener('click', handleReflection);
+            document.getElementById('generate-letter-btn').addEventListener('click', handleGenerateLetter);
+            document.getElementById('generate-idea-btn').addEventListener('click', handleGenerateIdea);
+            document.getElementById('delete-journal-btn').addEventListener('click', handleDeleteClick);
+        }
+        
+        // --- YOUTUBE BACKGROUND MUSIC ---
+        let ytPlayer;
+        let isPlaying = false;
+        const playPauseBtn = document.getElementById('play-pause-btn');
+        const playIcon = document.getElementById('play-icon');
+        const pauseIcon = document.getElementById('pause-icon');
+
+        function updatePlayButton(playing) {
+            isPlaying = playing;
+            if (playing) {
+                playIcon.classList.add('hidden');
+                pauseIcon.classList.remove('hidden');
+            } else {
+                playIcon.classList.remove('hidden');
+                pauseIcon.classList.add('hidden');
+            }
+        }
+
+        function onPlayerStateChange(event) {
+            if (event.data === YT.PlayerState.PLAYING) {
+                updatePlayButton(true);
+            } else {
+                updatePlayButton(false);
+            }
+        }
+
+        function loadAndCreatePlayer() {
+            window.onYouTubeIframeAPIReady = function() {
+                ytPlayer = new YT.Player('player-container', {
+                    height: '0',
+                    width: '0',
+                    playerVars: {
+                        'autoplay': 1,
+                        'controls': 0,
+                        'loop': 1,
+                        'listType': 'playlist',
+                        'list': 'UUpG22I-d5k_C73wG8b2gYgA'
+                    },
+                    events: {
+                        'onStateChange': onPlayerStateChange
+                    }
+                });
+            };
+
+            const tag = document.createElement('script');
+            tag.src = "https://www.youtube.com/iframe_api";
+            const firstScriptTag = document.getElementsByTagName('script')[0];
+            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        }
+
+        playPauseBtn.addEventListener('click', () => {
+            if (ytPlayer) {
+                if (isPlaying) {
+                    ytPlayer.pauseVideo();
+                } else {
+                    ytPlayer.playVideo();
+                }
+            } else {
+                const playerContainer = document.createElement('div');
+                playerContainer.id = 'player-container';
+                document.body.appendChild(playerContainer);
+                loadAndCreatePlayer();
+            }
+        });
+
+        // --- BUTTERFLY ANIMATION ---
+        function setupButterflyAnimation() {
+            const canvas = document.getElementById('butterfly-canvas');
+            const ctx = canvas.getContext('2d');
+            let butterflies = [];
+            let mouse = { x: null, y: null };
+
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+
+            window.addEventListener('mousemove', (e) => {
+                mouse.x = e.clientX;
+                mouse.y = e.clientY;
+            });
+
+            class Butterfly {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.size = Math.random() * 5 + 5;
+                    this.speedX = Math.random() * 1 - 0.5;
+                    this.speedY = Math.random() * 1 - 0.5;
+                    this.color = `rgba(230, 164, 180, ${Math.random() * 0.5 + 0.3})`;
+                    this.angle = 0;
+                    this.flapSpeed = Math.random() * 0.2 + 0.1;
+                }
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    this.angle += this.flapSpeed;
+                    if (mouse.x && mouse.y) {
+                        const dx = this.x - mouse.x;
+                        const dy = this.y - mouse.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        if (distance < 50) {
+                            this.x += dx / 10;
+                            this.y += dy / 10;
+                        }
+                    }
+                    if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                    if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+                }
+                draw() {
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath();
+                    const wingSize = this.size * (Math.sin(this.angle) * 0.5 + 1.5);
+                    ctx.moveTo(this.x, this.y);
+                    ctx.ellipse(this.x - wingSize, this.y, wingSize, this.size, Math.PI / 4, 0, Math.PI * 2);
+                    ctx.moveTo(this.x, this.y);
+                    ctx.ellipse(this.x + wingSize, this.y, wingSize, this.size, -Math.PI / 4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            function init() {
+                for (let i = 0; i < 15; i++) {
+                    butterflies.push(new Butterfly());
+                }
+            }
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                butterflies.forEach(b => { b.update(); b.draw(); });
+                requestAnimationFrame(animate);
+            }
+            init();
+            animate();
+        }
+
+        // --- ALL OTHER FUNCTIONS ---
+        function openJournalModal(entry = null) {
+            const journalForm = document.getElementById('journal-form');
+            const photoFilename = document.getElementById('photo-filename');
+            const docFilename = document.getElementById('doc-filename');
+            const viewAttachments = document.getElementById('view-attachments');
+            const deleteJournalBtn = document.getElementById('delete-journal-btn');
+            const journalId = document.getElementById('journal-id');
+            const modalTitle = document.getElementById('modal-title');
+            const journalTitle = document.getElementById('journal-title');
+            const journalContent = document.getElementById('journal-content');
+            const viewPhotoLink = document.getElementById('view-photo-link');
+            const viewDocLink = document.getElementById('view-doc-link');
+            const reflectionContainer = document.getElementById('reflection-output-container');
+            const journalModal = document.getElementById('journal-modal');
+            journalForm.reset();
+            photoFilename.textContent = '';
+            docFilename.textContent = '';
+            viewAttachments.classList.add('hidden');
+            deleteJournalBtn.classList.add('hidden');
+            journalId.value = '';
+            reflectionContainer.classList.add('hidden');
+            if (entry) {
+                modalTitle.textContent = "Lihat Tulisan";
+                journalId.value = entry.id;
+                journalTitle.value = entry.title;
+                journalContent.value = entry.content;
+                deleteJournalBtn.classList.remove('hidden');
+                if(entry.photoURL || entry.docURL) {
+                    viewAttachments.classList.remove('hidden');
+                    viewPhotoLink.innerHTML = entry.photoURL ? `<a href="${entry.photoURL}" target="_blank" class="text-[#D68096] hover:underline">Lihat Foto</a>` : '';
+                    viewDocLink.innerHTML = entry.docURL ? `<a href="${entry.docURL}" target="_blank" class="text-[#D68096] hover:underline">Lihat Dokumen</a>` : '';
+                }
+            } else {
+                modalTitle.textContent = "Tulisan Baru";
+            }
+            journalModal.classList.remove('hidden');
+            setTimeout(() => journalModal.querySelector('.modal-content').classList.remove('scale-95'), 10);
+        }
+        function closeJournalModal() {
+            const journalModal = document.getElementById('journal-modal');
+            journalModal.querySelector('.modal-content').classList.add('scale-95');
+            setTimeout(() => journalModal.classList.add('hidden'), 300);
+        }
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            if (!userId) { alert("Anda harus masuk untuk menyimpan."); return; }
+            const saveJournalBtn = document.getElementById('save-journal-btn');
+            saveJournalBtn.disabled = true;
+            saveJournalBtn.innerHTML = `<div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white mx-auto"></div>`;
+            const id = document.getElementById('journal-id').value;
+            const title = document.getElementById('journal-title').value.trim();
+            const content = document.getElementById('journal-content').value.trim();
+            if (!title || !content) { alert("Judul dan isi cerita tidak boleh kosong."); resetSaveButton(); return; }
+            let photoURL = null;
+            let docURL = null;
+            const journalPhoto = document.getElementById('journal-photo');
+            const journalDoc = document.getElementById('journal-doc');
+            if (journalPhoto.files[0]) { photoURL = await uploadFile(journalPhoto.files[0], `artifacts/${appId}/users/${userId}/photos/${Date.now()}_${journalPhoto.files[0].name}`); }
+            if (journalDoc.files[0]) { docURL = await uploadFile(journalDoc.files[0], `artifacts/${appId}/users/${userId}/docs/${Date.now()}_${journalDoc.files[0].name}`); }
+            const data = { title, content, userId, updatedAt: serverTimestamp() };
+            if (photoURL) data.photoURL = photoURL;
+            if (docURL) data.docURL = docURL;
+            try {
+                if (id && id !== 'undefined') {
+                    const docRef = doc(db, `artifacts/${appId}/users/${userId}/journal`, id);
+                    const existingDoc = await getDoc(docRef);
+                    if (existingDoc.exists()) {
+                        if (!photoURL) data.photoURL = existingDoc.data().photoURL || null;
+                        if (!docURL) data.docURL = existingDoc.data().docURL || null;
+                    }
+                    await updateDoc(docRef, data);
+                } else {
+                    data.createdAt = serverTimestamp();
+                    await addDoc(collection(db, `artifacts/${appId}/users/${userId}/journal`), data);
+                }
+                closeJournalModal();
+            } catch (error) { console.error("Error saving journal:", error); alert("Gagal menyimpan tulisan."); }
+            finally { resetSaveButton(); }
+        }
+        function resetSaveButton() { 
+            const saveJournalBtn = document.getElementById('save-journal-btn');
+            saveJournalBtn.disabled = false; 
+            saveJournalBtn.textContent = "Simpan"; 
+        }
+        async function uploadFile(file, path) {
+            try {
+                const storageRef = ref(storage, path);
+                const snapshot = await uploadBytes(storageRef, file);
+                return await getDownloadURL(snapshot.ref);
+            } catch (error) { console.error("File upload failed:", error); alert("Gagal mengunggah file."); return null; }
+        }
+        function loadJournalEntries() {
+            if (!userId) return;
+            const journalList = document.getElementById('journal-list');
+            const loadingSpinner = document.getElementById('loading-spinner');
+            const emptyJournalMessage = document.getElementById('empty-journal-message');
+            const q = query(collection(db, `artifacts/${appId}/users/${userId}/journal`));
+            onSnapshot(q, (snapshot) => {
+                if(loadingSpinner) loadingSpinner.classList.add('hidden');
+                if (snapshot.empty) { 
+                    if(emptyJournalMessage) emptyJournalMessage.classList.remove('hidden'); 
+                    if(journalList) journalList.innerHTML = ''; 
+                }
+                else {
+                    if(emptyJournalMessage) emptyJournalMessage.classList.add('hidden');
+                    const entries = [];
+                    snapshot.forEach(doc => { entries.push({ id: doc.id, ...doc.data() }); });
+                    entries.sort((a,b) => (b.createdAt?.toDate() || 0) - (a.createdAt?.toDate() || 0));
+                    renderJournalEntries(entries);
+                }
+            }, (error) => { console.error("Error loading journal entries:", error); if(loadingSpinner) loadingSpinner.classList.add('hidden'); if(journalList) journalList.innerHTML = `<p class="text-red-500 text-center col-span-full">Gagal memuat jurnal.</p>`; });
+        }
+        function renderJournalEntries(entries) {
+            const journalList = document.getElementById('journal-list');
+            journalList.innerHTML = '';
+            entries.forEach(entry => {
+                const entryCard = document.createElement('div');
+                entryCard.className = 'card rounded-xl p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer';
+                entryCard.addEventListener('click', () => openJournalModal(entry));
+                const date = entry.createdAt ? entry.createdAt.toDate().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Baru saja';
+                let attachmentIcons = '';
+                if (entry.photoURL) attachmentIcons += `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>`;
+                if (entry.docURL) attachmentIcons += `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>`;
+                entryCard.innerHTML = `
+                    <h3 class="font-display text-xl font-bold truncate mb-2">${entry.title}</h3>
+                    <p class="text-gray-600 text-sm mb-4">${date}</p>
+                    <p class="text-gray-700 h-20 overflow-hidden text-ellipsis">${entry.content}</p>
+                    <div class="flex space-x-2 mt-4">${attachmentIcons}</div>
+                `;
+                journalList.appendChild(entryCard);
+            });
+        }
+        function handleDeleteClick() {
+            const id = document.getElementById('journal-id').value;
+            if (!id) return;
+            showConfirmModal("Hapus Tulisan?", "Apakah Anda yakin ingin menghapus tulisan ini secara permanen?", () => { deleteJournalEntry(id); });
+        }
+        async function deleteJournalEntry(id) {
+            try { await deleteDoc(doc(db, `artifacts/${appId}/users/${userId}/journal`, id)); closeJournalModal(); }
+            catch (error) { console.error("Error deleting entry:", error); alert("Gagal menghapus tulisan."); }
+        }
+        function showConfirmModal(title, text, onConfirm) {
+            document.getElementById('confirm-title').textContent = title;
+            document.getElementById('confirm-text').textContent = text;
+            const confirmModal = document.getElementById('confirm-modal');
+            const confirmOkBtn = document.getElementById('confirm-ok-btn');
+            const confirmCancelBtn = document.getElementById('confirm-cancel-btn');
+            confirmModal.classList.remove('hidden');
+            const handleConfirm = () => { onConfirm(); hideConfirmModal(); confirmOkBtn.removeEventListener('click', handleConfirm); };
+            const handleCancel = () => { hideConfirmModal(); confirmCancelBtn.removeEventListener('click', handleCancel); };
+            confirmOkBtn.addEventListener('click', handleConfirm, { once: true });
+            confirmCancelBtn.addEventListener('click', handleCancel, { once: true });
+        }
+        function hideConfirmModal() { 
+            const confirmModal = document.getElementById('confirm-modal');
+            confirmModal.classList.add('hidden'); 
+        }
+        async function handleReflection() {
+            const content = document.getElementById('journal-content').value;
+            if (!content.trim()) {
+                alert("Tuliskan sesuatu di jurnal terlebih dahulu.");
+                return;
+            }
+            const reflectionContainer = document.getElementById('reflection-output-container');
+            const reflectionLoader = document.getElementById('reflection-loader');
+            const reflectionOutput = document.getElementById('reflection-output');
+            reflectionContainer.classList.remove('hidden');
+            reflectionLoader.classList.remove('hidden');
+            reflectionOutput.classList.add('hidden');
+            
+            const prompt = `Kamu adalah seorang teman yang bijaksana dan penuh empati. Baca tulisan jurnal ini dan berikan refleksi singkat (2-3 kalimat) yang suportif dalam bahasa Indonesia. Jangan menghakimi. Mulailah dengan frasa seperti "Terdengar seperti kamu sedang merasakan..." atau "Sepertinya hatimu sedang...". Berikut tulisannya:\n\n"${content}"`;
+            const reflection = await callGemini(prompt);
+            
+            reflectionLoader.classList.add('hidden');
+            reflectionOutput.textContent = reflection || "Gagal mendapatkan refleksi. Coba lagi nanti.";
+            reflectionOutput.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
