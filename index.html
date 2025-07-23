@@ -33,7 +33,7 @@
             font-family: 'Playfair Display', serif;
         }
         .card {
-            background-color: rgba(255, 255, 255, 0.8);
+            background-color: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
@@ -326,19 +326,23 @@
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
         // --- CONFIGURATION ---
-        const firebaseConfigFromEnv = typeof __firebase_config !== 'undefined' ? __firebase_config : '{}';
-        const firebaseConfig = firebaseConfigFromEnv === '{}' ? {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        } : JSON.parse(firebaseConfigFromEnv);
+        const firebaseConfig = {
+            apiKey: "AIzaSyC0suLYrIZQdwEwL7xYkHoWO1h8tYxU6Bc",
+            authDomain: "ruang-tumbuh-shafa.firebaseapp.com",
+            projectId: "ruang-tumbuh-shafa",
+            storageBucket: "ruang-tumbuh-shafa.appspot.com",
+            messagingSenderId: "715003665016",
+            appId: "1:715003665016:web:a995df4f9460295e186b8d",
+            measurementId: "G-WRTR8DKDPD"
+        };
+        
+        // =================================================================================
+        // TODO: GANTI DENGAN KUNCI API GEMINI MILIKMU
+        // Buat kunci API di Google AI Studio dan tempel di sini
+        // =================================================================================
+        const geminiApiKey = ""; // <-- PASTE YOUR GEMINI API KEY HERE
 
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'shafa-sanctuary-app';
-        const apiKey = ""; // Gemini API Key will be provided by the environment
-
+        const appId = firebaseConfig.projectId;
         let app, auth, db, storage, userId;
 
         // --- LOGIN LOGIC ---
@@ -391,16 +395,21 @@
                 auth = getAuth(app);
                 storage = getStorage(app);
 
-                onAuthStateChanged(auth, user => {
+                onAuthStateChanged(auth, async (user) => {
                     if (user) {
                         userId = user.uid;
                         loadJournalEntries();
                         generateAffirmation();
                     } else {
-                        signInAnonymously(auth).catch(error => {
+                         try {
+                            await signInAnonymously(auth);
+                        } catch (error) {
                             console.error("Anonymous sign-in failed:", error);
+                            if (error.code === 'auth/operation-not-allowed' || error.code === 'auth/configuration-not-found') {
+                                 alert("Gagal masuk. PASTIKAN Anda sudah mengaktifkan 'Anonymous' sign-in di Firebase Console > Authentication > Sign-in method.");
+                            }
                             setFallbackAffirmation();
-                        });
+                        }
                     }
                 });
             } catch (error) {
@@ -411,7 +420,10 @@
 
         // --- GEMINI API CALLER ---
         async function callGemini(prompt, history = []) {
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            if (!geminiApiKey) {
+                return "Maaf, kunci API untuk AI belum diatur. 🥺 Fitur ini belum bisa digunakan.";
+            }
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`;
             
             const contents = [...history];
             if (prompt) {
