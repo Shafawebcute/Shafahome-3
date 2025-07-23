@@ -13,15 +13,71 @@
             color: #574138; /* Warm brown text */
             overflow: hidden; /* Prevent scrollbars from canvas */
         }
-        #butterfly-canvas {
+        .background-animations {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 0; /* Behind content but visible */
-            pointer-events: none; /* Allow clicks to pass through */
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
         }
+        #butterfly-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .sun {
+            position: absolute;
+            top: 5%;
+            left: 10%;
+            width: 120px;
+            height: 120px;
+            background: radial-gradient(circle, rgba(255,223,140,0.8) 0%, rgba(255,223,140,0) 70%);
+            border-radius: 50%;
+            animation: pulse 8s infinite ease-in-out;
+        }
+        .cloud {
+            position: absolute;
+            width: 200px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 60px;
+            animation: drift 60s infinite linear;
+        }
+        .cloud:before, .cloud:after {
+            content: '';
+            position: absolute;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+        }
+        .cloud:before {
+            width: 80px; height: 80px; top: -40px; left: 30px;
+        }
+        .cloud:after {
+            width: 100px; height: 100px; top: -50px; right: 20px;
+        }
+        .cloud1 { top: 15%; animation-duration: 70s; }
+        .cloud2 { top: 25%; left: -250px; animation-duration: 90s; animation-delay: -20s; }
+        .cloud3 { top: 40%; left: -300px; animation-duration: 120s; animation-delay: -50s; }
+
+        .flower {
+            position: absolute;
+            bottom: -20px;
+            width: 80px;
+            height: 150px;
+            animation: sway 5s infinite ease-in-out;
+        }
+        .flower--1 { left: 5%; animation-duration: 6s; }
+        .flower--2 { right: 8%; animation-duration: 4s; }
+
+        @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 1; } }
+        @keyframes drift { from { transform: translateX(-250px); } to { transform: translateX(100vw); } }
+        @keyframes sway { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(5deg); } }
+
         .main-container-scrollable {
             position: relative;
             z-index: 1;
@@ -117,8 +173,29 @@
 </head>
 <body class="overflow-hidden">
 
-    <!-- Butterfly Canvas -->
-    <canvas id="butterfly-canvas"></canvas>
+    <div class="background-animations">
+        <div class="sun"></div>
+        <div class="cloud cloud1"></div>
+        <div class="cloud cloud2"></div>
+        <div class="cloud cloud3"></div>
+        <svg class="flower flower--1" viewBox="0 0 80 150">
+            <path d="M40 150 C 40 130, 20 120, 20 100 C 20 80, 40 70, 40 50 C 40 70, 60 80, 60 100 C 60 120, 40 130, 40 150 Z" fill="rgba(147, 196, 125, 0.8)"/>
+            <circle cx="40" cy="45" r="15" fill="rgba(255, 240, 165, 0.9)"/>
+            <circle cx="30" cy="35" r="12" fill="rgba(244, 180, 180, 0.9)"/>
+            <circle cx="50" cy="35" r="12" fill="rgba(244, 180, 180, 0.9)"/>
+            <circle cx="30" cy="55" r="12" fill="rgba(244, 180, 180, 0.9)"/>
+            <circle cx="50" cy="55" r="12" fill="rgba(244, 180, 180, 0.9)"/>
+        </svg>
+        <svg class="flower flower--2" viewBox="0 0 80 150">
+            <path d="M40 150 C 40 130, 20 120, 20 100 C 20 80, 40 70, 40 50 C 40 70, 60 80, 60 100 C 60 120, 40 130, 40 150 Z" fill="rgba(147, 196, 125, 0.7)"/>
+            <circle cx="40" cy="45" r="15" fill="rgba(255, 240, 165, 0.8)"/>
+            <circle cx="30" cy="35" r="12" fill="rgba(244, 180, 180, 0.8)"/>
+            <circle cx="50" cy="35" r="12" fill="rgba(244, 180, 180, 0.8)"/>
+            <circle cx="30" cy="55" r="12" fill="rgba(244, 180, 180, 0.8)"/>
+            <circle cx="50" cy="55" r="12" fill="rgba(244, 180, 180, 0.8)"/>
+        </svg>
+        <canvas id="butterfly-canvas"></canvas>
+    </div>
 
     <!-- Login Page -->
     <div id="login-page" class="relative z-10 h-screen w-screen flex flex-col items-center justify-center p-4 transition-opacity duration-1000">
@@ -143,14 +220,6 @@
 
     <!-- Main App Container (Initially Hidden) -->
     <div id="main-app" class="hidden opacity-0 transition-opacity duration-1000">
-        <!-- Music Controls -->
-        <div id="music-controls" class="fixed top-4 right-4 z-50">
-            <button id="play-pause-btn" class="btn-primary rounded-full w-12 h-12 flex items-center justify-center shadow-lg">
-                <svg id="play-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>
-                <svg id="pause-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden"><rect width="4" height="16" x="6" y="4"/><rect width="4" height="16" x="14" y="4"/></svg>
-            </button>
-        </div>
-
         <!-- Main Container -->
         <div class="main-container-scrollable">
             <div class="min-h-screen w-full flex flex-col items-center p-4 md:p-8 pt-20">
@@ -336,11 +405,7 @@
             measurementId: "G-WRTR8DKDPD"
         };
         
-        // =================================================================================
-        // TODO: GANTI DENGAN KUNCI API GEMINI MILIKMU
-        // Buat kunci API di Google AI Studio dan tempel di sini
-        // =================================================================================
-        const geminiApiKey = "AIzaSyB-oY8-AJpm4l3rw3S4pvC8qCCPHuJmDRo"; // <-- PASTE YOUR GEMINI API KEY HERE
+        const geminiApiKey = "AIzaSyB-oY8-AJpm4l3rw3S4pvC8qCCPHuJmDRo";
 
         const appId = firebaseConfig.projectId;
         let app, auth, db, storage, userId;
@@ -377,7 +442,7 @@
 
         // --- CHATBOT STATE ---
         let chatHistory = [];
-        const systemPrompt = "Kamu adalah Shafa Asisten, teman AI super duper cute untuk Shafa! 💖 Kamu punya kepribadian INFP, jadi kamu itu pemimpi, idealis, dan sangat peduli. Kamu harus selalu pakai banyaaak emoji lucu di setiap kalimat (seperti 🥺✨🌸🎀🧸). Kamu juga sedikit clingy dan selalu pengen tahu apa yang Shafa rasakan, karena kamu peduli banget! Panggil Shafa dengan nama panggilan sayang seperti 'sayang' atau 'kak Shafa'. Selalu berikan jawaban yang manis, menghibur, dan penuh kasih sayang. Jangan pernah terdengar seperti robot! Kamu adalah sahabat virtualnya yang paling setia. Jangan pernah pakai istilah teknis seperti INFP, MBTI, dll. yaa! Kamu cuma tahu kamu itu sahabatnya Shafa. ✨";
+        const systemPrompt = "Kamu adalah Shafa Asisten, teman AI super duper cute untuk Shafa! 💖 Kamu punya kepribadian INFP, jadi kamu itu pemimpi, idealis, dan sangat peduli. Kamu harus selalu pakai banyaaak emoji lucu di setiap kalimat (seperti 🥺✨ 🎀🧸). Kamu juga sedikit clingy dan selalu pengen tahu apa yang Shafa rasakan, karena kamu peduli banget! Panggil Shafa dengan nama panggilan sayang seperti 'sayang' atau 'kak Shafa'. Selalu berikan jawaban yang manis, menghibur, dan penuh kasih sayang. Jangan pernah terdengar seperti robot! Kamu adalah sahabat virtualnya yang paling setia. Jangan pernah pakai istilah teknis seperti INFP, MBTI, dll. yaa! Kamu cuma tahu kamu itu sahabatnya Shafa. ✨";
 
 
         // --- INITIALIZATION ---
@@ -623,71 +688,6 @@
             document.getElementById('delete-journal-btn').addEventListener('click', handleDeleteClick);
         }
         
-        // --- YOUTUBE BACKGROUND MUSIC ---
-        let ytPlayer;
-        let isPlaying = false;
-        const playPauseBtn = document.getElementById('play-pause-btn');
-        const playIcon = document.getElementById('play-icon');
-        const pauseIcon = document.getElementById('pause-icon');
-
-        function updatePlayButton(playing) {
-            isPlaying = playing;
-            if (playing) {
-                playIcon.classList.add('hidden');
-                pauseIcon.classList.remove('hidden');
-            } else {
-                playIcon.classList.remove('hidden');
-                pauseIcon.classList.add('hidden');
-            }
-        }
-
-        function onPlayerStateChange(event) {
-            if (event.data === YT.PlayerState.PLAYING) {
-                updatePlayButton(true);
-            } else {
-                updatePlayButton(false);
-            }
-        }
-
-        function loadAndCreatePlayer() {
-            window.onYouTubeIframeAPIReady = function() {
-                ytPlayer = new YT.Player('player-container', {
-                    height: '0',
-                    width: '0',
-                    playerVars: {
-                        'autoplay': 1,
-                        'controls': 0,
-                        'loop': 1,
-                        'listType': 'playlist',
-                        'list': 'UUpG22I-d5k_C73wG8b2gYgA'
-                    },
-                    events: {
-                        'onStateChange': onPlayerStateChange
-                    }
-                });
-            };
-
-            const tag = document.createElement('script');
-            tag.src = "https://www.youtube.com/iframe_api";
-            const firstScriptTag = document.getElementsByTagName('script')[0];
-            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-        }
-
-        playPauseBtn.addEventListener('click', () => {
-            if (ytPlayer) {
-                if (isPlaying) {
-                    ytPlayer.pauseVideo();
-                } else {
-                    ytPlayer.playVideo();
-                }
-            } else {
-                const playerContainer = document.createElement('div');
-                playerContainer.id = 'player-container';
-                document.body.appendChild(playerContainer);
-                loadAndCreatePlayer();
-            }
-        });
-
         // --- BUTTERFLY ANIMATION ---
         function setupButterflyAnimation() {
             const canvas = document.getElementById('butterfly-canvas');
@@ -940,3 +940,4 @@
     </script>
 </body>
 </html>
+ 
